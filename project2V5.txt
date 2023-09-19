@@ -842,7 +842,21 @@ int main() {
 	                             M       <==> arr[22]
 	                             R       <==> arr[23]
 	    */
+		//Now assume lom=0, him=0, avm=0
+		int lom = 0;
+		int him = 0;
+		int avm = 0;
+		//Open a file and write data into it
+	    ofstream outputFile("outdata.txt", ios::out | ios::app);
 
+	     if (outputFile.fail()) {
+	        cout << "Error opening the output file.\n";
+	        exit (1);
+	    }
+	    printResult1(outputFile, dimension, maxMoves, repeats, protocol, lom, him, avm);
+
+		cout << "The end! Goodbye! " << endl;
+		return 0;
 
 	cout << "The end! Goodbye! " << endl;
 	return 0;
