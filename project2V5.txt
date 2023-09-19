@@ -1,0 +1,849 @@
+//============================================================================
+// Lanquage       : C++ 17
+// Name        : cs4500Project2.cpp
+// Author      : Lucas Lovellette, Silvia Matthews and  Jess Payton
+// Class       : CS4500 section 1
+// Date        : September 16, 2023
+// Files       : This needs to be done
+// References  : Website's  are indicated throughout program, Used mainly for syntax and structure.
+//
+// Description : Still needs to be done
+// Description of data structure: Person and PersonGPS classes
+//============================================================================
+
+#include <iostream>
+#include <cstdlib>
+#include <string>
+#include <ctime>
+#include <regex>
+#include <cctype>
+#include <time.h>
+#include <limits>
+#include <fstream>
+#include <vector>
+#include <iomanip>
+
+#include <list>
+
+
+using namespace std;
+
+//============================================================================
+// Class       : Person
+// Description : Object representing a person
+// Source      :   https://www.ibm.com/docs/en/i/7.4?topic=only-destructors-c
+//============================================================================
+
+class Person{
+
+private:
+   string fName;
+public:
+	//Constructors
+	Person(){
+		fName = "Stranger";         //default constructor
+	}
+
+	Person(string n){        //not used, but this can be used if a Person object was created from Main
+		fName = n;
+	}
+
+	//Destructors
+	~Person() {
+		//  cout << "destructing Person" << endl;
+	}
+
+	//Getter and Setter
+	string getFirstName(){
+		return fName;
+	}
+
+	void setFirstName(string n){
+		fName = n;
+	}
+};
+
+//============================================================================
+// Class       : PersonGPS
+// Description : Purpose of this class is to track location of a person, setting x and y location
+//                   and bounds for min and max
+// Source      : https://www.w3schools.com/cpp/cpp_inheritance.asp used as a refresher for C++ vs Java
+//
+//              https://www.ibm.com/docs/en/i/7.4?topic=only-destructors-c
+//============================================================================
+class PersonGPS: public Person{
+
+public:
+   PersonGPS(){
+		//default constructor
+		//automatically creates a Person object using a default constructor
+			x = y = minBound = maxBound = 0;
+	}
+
+   PersonGPS(int a, int b, int c, int d){
+	   //automatically creates a Person object using a default constructor
+	   x = a;
+	   y = b;
+	   minBound = c;
+	   maxBound = d;
+	}
+
+	//Destructors
+	~PersonGPS() {
+		//    cout << "destructing PersonGPS" << endl;
+	}
+
+	int getX(){
+		 return x;
+	}
+
+	int getY(){
+		return y;
+	}
+
+	int getMinBound(){
+		return minBound;
+	}
+
+	int getMaxBound(){
+		return maxBound;
+	}
+
+	void setX(int a){
+		x = a;
+	}
+
+	void setY(int b){
+		y = b;
+	}
+
+	void setMinBound(int c){
+		minBound = c;
+	}
+
+	void setMaxBound(int d){
+		 maxBound = d;
+	}
+
+	//============================================================================
+	// Function    : movePerson
+	// Description : Purpose of this function is to check bounds and determine if position should be
+	//               update
+	// Source      : none used
+	// Comments    : Display messages for testing commented out
+	//============================================================================
+
+	bool movePerson(int a, int b){
+		bool test = true;
+		/*--------------------------------------------------------
+		 * With HW2 if we are on protocol 8, then there could be a move for x and y on movement to NW, NE, SW, SE. The below if / else
+		 * condition is no longer application. Modified so that we check to see if an adjustment is needed for each coordinate.
+		 */
+		/*
+		if (a != 0){ //direction to move is either E or W. Make sure moving it is not out-of-bounds
+			test = checkBounds(x + a);
+		} else {
+			test = checkBounds(y + b);
+		}
+		*/
+		if (a != 0){ //direction to move is either E or W. Make sure moving it is not out-of-bounds
+			test = checkBounds(x + a);
+		}
+
+		if (b != 0 && test){
+			test = checkBounds(y + b);
+		}
+
+		if (test){
+			x += a;
+			y += b;
+			cout << this->getFirstName() << " moved to (" << x << ", " << y << ")" << endl;
+			return true;
+		} else {
+				cout << this->getFirstName() << "  hit out of bounds and is halting at position (" << x << ", " << y << ")" << endl;
+				return false;
+		}
+	}
+
+
+
+	//============================================================================
+	// Function name : checkCoordinates
+	// Description   : A Bool test to see if players are at same grid coordinates.
+	//                 This is checked after every move
+	// Source        : none used
+	//============================================================================
+
+	bool checkCoordinates(int x1, int y1){
+		//x1 = other person's x coordinate
+		//y1 = other person's y coordinate
+		if (x == x1 && y == y1){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+private: // class specific attributes and functions to remain hidden
+	int x, y, minBound, maxBound;  //Coordinates of a person and minimum/maximum boundaries
+
+	//============================================================================
+	// Function name : checkBounds
+	// Description   : A Bool test to see if the x and y value is larger than zero and less than dimension/max bound
+	// Source        : none
+	//============================================================================
+	bool checkBounds(int testVal){
+		if (testVal < minBound || testVal > maxBound){
+			return false;
+		} else {
+			return true;
+        }
+	}
+};
+
+//============================================================================
+// Function    : promptInteger
+// Description : Purpose of this function is to continue to prompt user for a
+//               positive integer less than maxNum, contains only numbers, and contains
+//               no special characters.
+// Source      : https://linuxhint.com/regular-expression-basics-cpp/
+//============================================================================
+/*
+int promptInteger(int maxNum){
+
+	while (true){
+		string input;
+
+		cout << "Please enter a positive integer value less than " << maxNum << ": ";
+		cin >> input;
+
+        //Start testing input through regex's to formulate appropriate error messages
+        if (regex_search(input,regex("[a-zA-Z]"))){
+        	//checking for alpha character
+        	cout << "There is an alphabetical character in " << input << ". ";
+        } else if (regex_search(input,regex("[^a-zA-Z0-9.]"))){
+        	//checking for non-alphanumeric
+        	cout << "There is a special character in " << input << ". ";
+        } else if (regex_search(input,regex("[.]"))){
+        	//checking for decimal
+        	cout << "There is a decimal in " << input << ". ";
+        } else if (stoi(input) <= 0) {
+        	//negative number or 0 is not allowed
+        	cout << "Zero or negative integer was used. Your input was " << input << ". ";
+        } else if (stoi(input) >= maxNum){
+        	//positive integer provide but it is at or exceeds maxNum
+        	cout << "Maximum threshold exceeded. Your input was " << input << ". ";
+        } else {
+        	return stoi(input);
+        }
+	}//end while
+}//end promptInteger
+
+
+*/
+//============================================================================
+// Function    : attemptMove
+// Description : Purpose of this function is to evaluate the direction of the move and call movePerson.
+//                   Allows both players to use this function.
+// Source      : https://linuxhint.com/regular-expression-basics-cpp/;
+//               help with object passing from:
+//               https://www.ibm.com/docs/en/zos/2.4.0?topic=calls-pass-by-reference-c-only
+//               pass-by-reference citation - https://cplusplus.com/forum/beginner/215643/
+//============================================================================
+
+bool attemptMove(PersonGPS &person, int direction){
+
+	bool move;
+
+	switch (direction){
+		case 1:                  //North
+			cout << person.getFirstName() << " attempting to move North." << endl;
+			move = person.movePerson(0, 1);
+			break;
+		case 2:                  //East
+			cout << person.getFirstName() << " attempting to move East." << endl;
+			move = person.movePerson(1, 0);
+			break;
+		case 3:                  //South
+			cout << person.getFirstName() << " attempting to move South." << endl;
+			move = person.movePerson(0, -1);
+			break;
+		case 4:                  //West
+			cout << person.getFirstName() << " attempting to move West." << endl;
+			move = person.movePerson(-1, 0);
+			break;
+		case 5: 	     		//NorthEast
+			cout << person.getFirstName() << " attempting to move NorthEast." << endl;
+			move = person.movePerson(1, 1);
+			break;
+		case 6:	    			//SouthEast
+			cout << person.getFirstName () << " attempting to move SouthEast." << endl;
+			move = person.movePerson(1, -1);
+			break;
+		case 7:	        		//SouthWest
+			cout << person.getFirstName() << " attempting to move SouthWest." << endl;
+			move = person.movePerson(-1, -1);
+			break;
+		case 8:					//NorthWest
+			cout << person.getFirstName() << " attempting to mover NorthWest" << endl;
+			move = person.movePerson(-1, 1);
+			break;
+		default:
+			cout << "Random number generator provided an invalid index. Ending program. . . " << endl;
+			exit(1);
+    }
+	return move;
+}
+
+double calcAvg(list<int> moves){
+	int repetitions = moves.size();
+	double sum = 0.00;
+
+	for (int item : moves){
+		sum += item;
+	}
+	return (sum / (double)repetitions);
+}
+/*==============================================================================
+ * Need to create 3 functions for 3 expirements
+ * source: https://cplusplus.com/reference/list/list/
+ *         https://www.w3schools.blog/how-to-print-list-in-c
+ *         https://thispointer.com/c-how-to-get-element-by-index-in-list/
+ */
+//================================================================================
+
+void experiment1(const int p, const int m, const int r, int d){
+
+	list<int> list;
+	int currentMove;
+	bool move;				//used to determine if a user has moved
+	srand ((unsigned) time (NULL));
+
+	//for loop
+	for(int i=0; i<r; i++){//Initializing person a and person b
+		PersonGPS personA(0,0,0,d);
+		PersonGPS personB(d,d,0,d);
+		personA.setFirstName("Jess");
+		personB.setFirstName("Abby");
+		currentMove = 0;
+		while (currentMove < m){
+			//Move person A using randomA random number generator
+			move = false;
+
+			if (p == 4){
+				//move will not be used for protocol 4
+				move = attemptMove(personA, 1 + (rand () % p));
+				currentMove++;
+			} else {
+				//Inside protocol 8 condition. If a person hits a boundary, they should keep trying until they
+				//make a move
+				while (!move && (currentMove != m)){
+					move = attemptMove(personA, 1 + (rand () % p));
+					currentMove++;
+				}
+			}
+
+			if (personA.checkCoordinates(personB.getX(), personB.getY())){
+				cout << "Hurray! Reunion! Moves taken: "  << currentMove <<  endl;
+				cout << "Moves left: " << m - currentMove << endl;
+				break;
+			} else if (currentMove == m) {
+				cout << "MaxMoves reached without the two meeting. Moves: " << endl;
+			} else {
+				//Again, but for B this time
+				if (p == 4){
+					//move will not be used for protocol 4
+					move = attemptMove(personB, 1 + (rand () % p));
+					currentMove++;
+				} else {
+					//Inside protocol 8 condition. If a person hits a boundary, they should keep trying until they
+					//make a move
+					//reset move to false to evaluate if personB moves
+					move = false;
+
+					while (!move && (currentMove != m)){
+						move = attemptMove(personB, 1 + (rand () % p));
+						currentMove++;
+				}
+			}//end else
+				//attemptMove(personB, randomB);
+				//currentMove++;
+				if (personA.checkCoordinates(personB.getX(), personB.getY())){
+					cout << "Hurray! Reunion! Moves taken: "  << currentMove <<  endl;
+					cout << "Moves left: " << m - currentMove << endl;
+					break;
+				} else if (currentMove == m) {
+					cout << "MaxMoves reached without the two meeting. Moves: "  << currentMove << endl;
+				} else {
+				} //end else
+			} //else
+		} //end while
+		list.push_back(currentMove);
+	} //end for
+
+	for (int item : list) {
+	  cout << item << " ";
+	}
+	cout << endl;
+	list.sort();
+	cout << *list.begin() << endl;
+	cout << calcAvg(list) << endl;
+	list.reverse();
+	cout << *list.begin() << endl;
+
+
+} //end experiment1
+// Jess Start  -- added Lucas expiremnt 2 and 3 below
+//==============================================================================
+/*expirement 2
+ *
+ */
+//==============================================================================
+void experiment2(const int d, const int p, const int m, int max_r){
+    srand ((unsigned) time (NULL));
+    for(int r = 1; r <= max_r; r++){
+        list<int> movesList;
+        for(int i = 0; i < r; i++){
+            PersonGPS personA(0,0,0,d);
+            PersonGPS personB(d,d,0,d);
+            int currentMove = 0;
+            bool move;
+
+            while(currentMove < m) {
+                move = false;
+                if(p == 4){
+                    move = attemptMove(personA, 1 + (rand() % p));
+                    currentMove++;
+                } else {
+                    while(!move && currentMove != m){
+                        move = attemptMove(personA, 1 + (rand() % p));
+                        currentMove++;
+                    }
+                }
+
+                if(personA.checkCoordinates(personB.getX(), personB.getY())){
+                    cout << "Hurray! Reunion! Moves taken: " << currentMove << endl;
+                    cout << "Moves left: " << m - currentMove << endl;
+                    break;
+                } else if(currentMove == m){
+                    cout << "MaxMoves reached without the two meeting. Moves: " << currentMove << endl;
+                }
+
+                if(p == 4){
+                    move = attemptMove(personB, 1 + (rand() % p));
+                    currentMove++;
+                } else {
+                    move = false;
+                    while(!move && currentMove != m){
+                        move = attemptMove(personB, 1 + (rand() % p));
+                        currentMove++;
+                    }
+                }
+
+                if(personA.checkCoordinates(personB.getX(), personB.getY())){
+                    cout << "Hurray! Reunion! Moves taken: " << currentMove << endl;
+                    cout << "Moves left: " << m - currentMove << endl;
+                    break;
+                } else if(currentMove == m){
+                    cout << "MaxMoves reached without the two meeting. Moves: " << currentMove << endl;
+                }
+            }
+
+            movesList.push_back(currentMove);
+        }
+
+        cout << "Results for repetition " << r << ": ";
+        for(int item : movesList){
+            cout << item << " ";
+        }
+        cout << endl;
+    }
+}
+
+//============================================================================
+/* expirement 3
+ *
+ */
+//==============================================================================
+
+void experiment3(const int d, const int m, const int r, int max_p){
+    srand ((unsigned) time (NULL));
+    for(int p = 1; p <= max_p; p++){
+        list<int> movesList;
+        for(int i = 0; i < r; i++){
+            PersonGPS personA(0,0,0,d);
+            PersonGPS personB(d,d,0,d);
+            int currentMove = 0;
+            bool move;
+
+            while(currentMove < m){
+                move = false;
+                if(p == 4){
+                    move = attemptMove(personA, 1 + (rand() % p));
+                    currentMove++;
+                } else {
+                    while(!move && currentMove != m){
+                        move = attemptMove(personA, 1 + (rand() % p));
+                        currentMove++;
+                    }
+                }
+
+                if(personA.checkCoordinates(personB.getX(), personB.getY())){
+                    cout << "Hurray! Reunion! Moves taken: " << currentMove << endl;
+                    cout << "Moves left: " << m - currentMove << endl;
+                    break;
+                } else if(currentMove == m){
+                    cout << "MaxMoves reached without the two meeting. Moves: " << currentMove << endl;
+                }
+
+                if(p == 4){
+                    move = attemptMove(personB, 1 + (rand() % p));
+                    currentMove++;
+                } else {
+                    move = false;
+                    while(!move && currentMove != m){
+                        move = attemptMove(personB, 1 + (rand() % p));
+                        currentMove++;
+                    }
+                }
+
+                if(personA.checkCoordinates(personB.getX(), personB.getY())){
+                    cout << "Hurray! Reunion! Moves taken: " << currentMove << endl;
+                    cout << "Moves left: " << m - currentMove << endl;
+                    break;
+                } else if(currentMove == m){
+                    cout << "MaxMoves reached without the two meeting. Moves: " << currentMove << endl;
+                }
+            }
+
+            movesList.push_back(currentMove);
+        }
+
+        cout << "Results for protocol " << p << ": ";
+        for(int item : movesList){
+            cout << item << " ";
+        }
+        cout << endl;
+    }
+}
+
+//Jess Start added Silvia's token and file input/output functions
+//**********************************************************************************************
+//String tokenizing - reference: page 632 on textbook
+void split(const string &s, char delim, vector<string>& tokens) {
+    int tokenStart = 0;   //Start position of the next token
+
+    //Find the first occurrence of the delimiter
+    int delimPosition = s.find(delim);
+
+    //While we haven't run out of delimiters...
+    while (delimPosition != string::npos) {
+
+        //Extract the token
+        string tok = s.substr(tokenStart, delimPosition - tokenStart);
+
+        //Push the token onto the tokens vector
+        tokens.push_back(tok);
+
+        //Move delimPosition to the next character position.
+        delimPosition++;
+
+        //Move tokenStart to delimiPosition
+        tokenStart = delimPosition;
+
+        //Find the next occurrence of the delimiter
+        delimPosition = s.find(delim, delimPosition);
+
+        //If no more delimiters, extract the last token
+        if (delimPosition == string::npos) {
+            string tok=s.substr(tokenStart, delimPosition - tokenStart);
+            tokens.push_back(tok);
+        }
+    }
+}
+//************************************************************************************
+//The format of the experiment #1
+void printResult1(ostream &file, int dim, int mm, int p, int pro, int lm, int hm, int am) {
+    const int ROWS = 4;
+    const int COLS = 7;
+
+    //Write the header
+    file << left << setw(10) << "DIMENSION"
+         << left << setw(15) << "Maximum Moves"
+         << left << setw(18) << "Number of Repeats"
+         << left << setw(10) << "Protocol"
+         << left << setw(15) << "Lowest Moves"
+         << left << setw(15) << "Highest Moves"
+         << left << setw(15) << "Average Moves" << endl;
+
+     for (int row = 0; row < ROWS; row++) {
+
+        for (int col = 0; col < COLS; col++) {
+        }
+            file << left << setw(10) << dim
+         << left << setw(15) << mm
+         << left << setw(18) << p
+         << left << setw(10) << pro
+         << left << setw(15) << lm
+         << left << setw(15) << hm
+         << left << setw(15) << am << endl;
+
+        //file << endl;
+    }
+}
+//********************************************************************************************
+void isInsideRange(int arr[]) {
+
+    //Check 1st line
+    if (arr[0] < 100 && arr[1] < 100 && arr[2] < 100 && arr[3] < 100 && arr[4] < 100 && arr[0] > 0 && arr[1] > 0 && arr[2] > 0 && arr[3] > 0 && arr[4] > 0) {
+        if (arr[0] <= arr[1] && arr[1] <= arr[2] && arr[2] <= arr[3] && arr[3] <= arr[4]) {
+            //cout << "Data in the first line are correct.\n";
+        }else {
+            cout << "Five numbers in the first line should increase from left to right.\n";
+            exit (1);
+        }
+    }else {
+        cout << "Please provide all data in the range [1,100) in the first line\n";
+        exit (1);
+    }
+
+    int repetitionMax = 10000;
+    //Check 3rd line
+    //Jess start - changed 100 to 10000 (note his requirement says 10000 but sample shows 50000)
+    //if (arr[8] < 100 && arr[9] < 100 && arr[10] < 100 && arr[11] < 100 && arr[12] < 100 && arr[8] > 0 && arr[9] > 0 && arr[10] > 0 && arr[11] > 0 && arr[12] > 0) {
+    //    if (arr[8] <= arr[9] && arr[9] <= arr[10] && arr[10] <= arr[11] && arr[11] <= arr[12]) {
+    if (arr[8] <= repetitionMax && arr[9] <= repetitionMax && arr[10] <= repetitionMax && arr[11] <= repetitionMax && arr[12] <= repetitionMax && arr[8] > 0 && arr[9] > 0 && arr[10] > 0 && arr[11] > 0 && arr[12] > 0) {
+        if (arr[8] <= arr[9] && arr[9] <= arr[10] && arr[10] <= arr[11] && arr[11] <= arr[12]) {
+    //Jess end
+            //cout << "Data in the third line are correct.\n";
+        }else {
+            cout << "Five numbers in the third line should increase from left to right.\n";
+            exit (1);
+        }
+    }else {
+        //cout << "Please provide all data in the range [1,100) in the third line.\n";
+        cout << "Please provide all data in the range [1,10000] in the third line.\n";
+        exit (1);
+    }
+
+    //Check 5th line
+    //Jess start - 5th line is protocol check only
+    //if (arr[16] < 100 && arr[17] < 100 && arr[18] < 100 && arr[19] < 100 && arr[20] < 100 && arr[16] > 0 && arr[17] > 0 && arr[18] > 0 && arr[19] > 0 && arr[20] > 0) {
+    //    if (arr[16] <= arr[17] && arr[17] <= arr[18] && arr[18] <= arr[19] && arr[19] <= arr[20]) {
+    if (
+           (arr[16] == 4 || arr[16] == 8)
+        && (arr[17] == 4 || arr[17] == 8)
+        && (arr[18] == 4 || arr[18] == 8)
+        && (arr[19] == 4 || arr[19] == 8)){
+            //cout << "Data in the fifth line are correct.\n";
+    } else {
+        cout << "Fifth line should be 4 numbers of protocol with 4 or an 8. There was a protocol that did not indicate of of these numbers\n";
+        exit (1);
+    }
+
+    //Check 2nd line
+    //Jess start
+    //if (arr[5] != 4 && arr[5] != 8) {
+    if (!(arr[5] == 4 || arr[5] == 8)){
+    //Jess end
+        cout << "The protocol should be only 4 or 8 in the second line.\n";
+        exit (1);
+    }
+
+    if (arr[6] > 1000000 || arr[6] <= 0) {
+        cout << "The maximum number of moves is not correct in the second line (range(0,1000000]).\n";
+        exit (1);
+    }
+
+    //Jess start
+    if (arr[7] > repetitionMax || arr[7] < 0){
+        cout << "The maximum number of moves is not correct in the second line (range(0,10000]).\n";
+        exit (1);
+    }
+    //Jess end
+
+    //Check 4th line (dimension)
+    //Jess start - line 4 is in order of D, P, M.
+    //if (arr[13] != 4 && arr[13] != 8) {
+    //    cout << "The protocol should be only 4 or 8 in the fourth line.\n";
+    //    exit (1);
+    //}
+    //Jess end
+    if (arr[13] <= 0 || arr[13] >= 100) {
+        cout << "Dimension must be a positive number greater than 0 and less than 100 on the fourth line.\n";
+        exit (1);
+    }
+
+    //if (arr[14] > 1000000 || arr[14] <= 0) {
+    //    cout << "The maximum number of moves is not correct in the fourth line (range(0,1000000]).\n";
+    //    exit (1);
+    //}
+
+    //Jess start - this will work if they don't give a 4 or 8, but if they give one or the other it won't work.
+    //if (arr[14] != 4 && arr[14] != 8) {
+    if (!(arr[14] == 4 || arr[14] == 8)) {
+        cout << "The protocol should be only 4 or 8 in the fourth line.\n";
+        exit (1);
+    }
+
+    //Missing check on original code
+    if (arr[15] > 1000000 || arr[15] <= 0) {
+        cout << "The maximum number of moves is not correct in the fourth line (range(0,1000000]).\n";
+        exit (1);
+    }
+    //Jess end
+
+    //Check 6th line
+    //Jess start -- Missing index 20. copy and paste error correction. Line 6 goes D, M, R
+
+    if (arr[20] <= 0 || arr[20] >= 100) {
+        cout << "Dimension must be a positive number greater than 0 and less than 100 on the 6th line.\n";
+        exit (1);
+    }
+
+    //if (arr[21] != 4 && arr[21] != 8) {
+    //    cout << "The protocol should be only 4 or 8 in the sixth line.\n";
+    //    exit (1);
+    //}
+
+    //if (arr[22] > 1000000 || arr[22] <= 0) {
+    //    cout << "The maximum number of moves is not correct in the sixth line (range(0,1000000]).\n";
+    //    exit (1);
+    //}
+
+    if (arr[21] > 1000000 || arr[21] <= 0) {
+        cout << "The maximum number of moves is not correct in the sixth line (range(0,1000000]).\n";
+        exit (1);
+    }
+
+    if (arr[22] > repetitionMax || arr[22] < 0){
+        cout << "The maximum number of moves is not correct in the sixth line (range(0,10000]).\n";
+        exit (1);
+    }
+
+}
+
+
+//=============================================================================
+// Function     : main
+// Description  : receives information on the dimensions and the max amount of moves from the functions responsible for
+//              collecting the information. With the help of keyed objects, string inputs, nested conditional statements, and the calling of the
+//              function containing the direction-determining switch statement given by function call attemptMove,
+//              the main function generates the actual movements of person A and person B
+//              within the Cartesian grid represented by the "Woods". Further communication with the user regarding the movements of the persons,
+//              the locations, and the statuses of moves used, reached, and whether or not they met occurs here.
+//              attemptMove function works with the randomly generated numerical representations for the four primary cardinal directions
+//              to move each person in a loop. the while loop perfectly allows for the movement to continue until user defined parameters are reached.
+// Sources      :
+//random number generator:            https://www.digitalocean.com/community/tutorials/random-number-generator-c-plus-plus
+//keyed objects(several sources):     https://en.cppreference.com/w/cpp/container/map
+//                                    https://stackoverflow.com/questions/68286710/how-to-create-a-map-of-unique-object-keys-and-objects-in-c
+//                                    https://www.techiedelight.com/use-custom-objects-keys-std-map-cpp/
+//                                    https://www.geeksforgeeks.org/introduction-to-red-black-tree/
+//============================================================================
+
+int main() {
+//	int protocol = 4;
+//	int maxMoves = 1000;
+//	int repetition = 10;
+//	int dimension = 2;
+    //Now we prepare for the experiment 1
+	int arr[24];
+	string str;
+    	int dimension = arr[0];
+    	int maxMoves = arr[6];
+    	int protocol = arr[5];
+    	int repeats = arr[7];
+    	int repetition = repeats;
+    //	int arr[24];
+    //	string str;
+
+	experiment1(protocol, maxMoves, repetition, 2);
+	//experiment2()
+
+
+
+	    //Open the file
+
+
+	    ifstream inputFile("indata.txt", ios::in);
+
+	    //Test for File open errors
+	    if (inputFile.fail()) {
+	        cout << "Error opening the input file.\n";
+	        exit (1);
+	    }
+
+	    //Read a data from the file
+	    cout << "\nRead data from the input file: \n";
+
+	    //Vector to hold the tokens
+	    vector<string> tokens;
+
+	    int i = 0;
+	    int lines = 0;
+
+	    while (getline(inputFile, str)) {
+	        split(str, ',', tokens);
+	        for (auto e : tokens) {
+
+	           //Check each string
+	           if (regex_search(e,regex("[a-zA-Z]"))){
+	        	  //checking for alpha character
+	        	  cout << "There is an alphabetical character " << e << " in line " << lines+1 << " . " << endl;
+	        	  exit (1);
+	           } else if (regex_search(e,regex("[^a-zA-Z0-9.\r\n]"))){
+	        	  //checking for non-alphanumeric
+	        	  cout << "There is a special character " << e << " in line " << lines+1 << " . " << endl;
+	              exit (1);
+	           } else if (regex_search(e,regex("[.]"))){
+	              //checking for decimal
+	        	  cout << "There is a decimal " << e << " in line " << lines+1 << " . " << endl;
+	        	  exit (1);
+	           }
+
+	          //Now all data should be numbers
+	           arr[i] = stoi(e);
+	           i++;
+	        }
+	        tokens.clear();
+	        lines++;
+	    }
+
+	    //Check if the file contain 6 lines of data
+	    if (lines != 6 ) {
+	        cout << "Please contain 6 lines of data.\n";
+	        exit (1);
+	    }
+
+	    //Test if tokenizing is right
+	    /*
+	    for (int j=0; j<24; j++) {
+	          cout << "arr[" << j << "] = " << arr[j] << endl;
+	    }*/
+
+	    //Now check if data is inside the range
+	     isInsideRange(arr);
+
+	    cout << endl << endl;
+
+	    /* for the experiment 1: DO ~ D4 <==> arr[0]~ arr[4]
+	                             P       <==> arr[5]
+	                             M       <==> arr[6]
+	                             R       <==> arr[7]
+
+	       for the experiment 2: DO ~ D4 <==> arr[8]~ arr[12]
+	                             P       <==> arr[13]
+	                             M       <==> arr[14]
+	                             R       <==> arr[15]
+
+	       for the experiment 3: DO ~ D4 <==> arr[16]~ arr[20]
+	                             P       <==> arr[21]
+	                             M       <==> arr[22]
+	                             R       <==> arr[23]
+	    */
+
+
+	cout << "The end! Goodbye! " << endl;
+	return 0;
+}
